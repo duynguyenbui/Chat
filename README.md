@@ -6,9 +6,6 @@
   ```zsh
     docker compose build && docker compose up
   ```
-
-![chat](img/chat.png)
-
 ### Database:
 ![database](./img/database.png)
 
