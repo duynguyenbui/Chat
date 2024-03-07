@@ -1,0 +1,17 @@
+[
+  {
+    "Id": "fcff8be1-e158-456e-83e4-58280653071c",
+    "Email": "nguyen@email.com",
+    "Password": "Nguyen@123"
+  },
+  {
+    "Id": "03cf22cf-4999-45f9-886f-61d0ad2536a5",
+    "Email": "duy@email.com",
+    "Password": "Duy@123"
+  },
+  {
+    "Id": "c87e1238-b36c-4ebc-a423-ca4305b88b4c",
+    "Email": "bui@email.com",
+    "Password": "Bui@123"
+  }
+]
