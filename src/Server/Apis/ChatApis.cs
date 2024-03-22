@@ -60,8 +60,8 @@ public static class ChatApis
     }
 
     public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>> CreateMessage(
-        [AsParameters] ChatServices services, [FromHeader(Name = "x-connectionid")] string? connectionId,
-        CreateMessageRequest request)
+    [AsParameters] ChatServices services, [FromHeader(Name = "x-connectionid")] string? connectionId,
+    CreateMessageRequest request, IFormFile Image)
     {
         var user = await services.IdentityService.GetCurrentUser();
 
@@ -93,6 +93,21 @@ public static class ChatApis
             Conversation = conversation,
             Seen = [user]
         };
+
+        if (Image != null)
+        {
+            // Save Image
+            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Pics");
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Image.FileName);
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await Image.CopyToAsync(stream);
+            }
+
+            message.ImageFileName = fileName;
+        }
 
         conversation.Messages?.Add(message);
         conversation.LastMessageAt = DateTime.UtcNow;
