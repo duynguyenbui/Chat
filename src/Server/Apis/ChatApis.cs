@@ -17,15 +17,15 @@ public static class ChatApis
 
         // Routes for messages.
         app.MapPost("/messages", CreateMessage);
-        app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
-        {
-            var tokens = forgeryService.GetAndStoreTokens(context);
-            var xsrfToken = tokens.RequestToken!;
-            return TypedResults.Content(xsrfToken, "text/plain");
-        });
+        // app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
+        // {
+        //     var tokens = forgeryService.GetAndStoreTokens(context);
+        //     var xsrfToken = tokens.RequestToken!;
+        //     return TypedResults.Content(xsrfToken, "text/plain");
+        // });
         //.RequireAuthorization(); // In a real world scenario, you'll only give this token to authorized users
 
-        app.MapPost("/messages/pics", CreateImageMessage);
+        app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery();
         app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
 
@@ -121,8 +121,6 @@ public static class ChatApis
 
     public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>>
         CreateImageMessage([AsParameters] ChatServices services,
-            [FromHeader(Name = "x-connectionid")] string? connectionId,
-            [FromHeader(Name = "x-xsrf-token")] string? xsrfToken,
             string conversationId,
             IFormFile? image)
     {
@@ -177,9 +175,8 @@ public static class ChatApis
 
         var result = await services.Context.SaveChangesAsync();
 
-        if (!string.IsNullOrEmpty(connectionId))
-            await services.HubContext.Clients.GroupExcept(conversation.Id, connectionId)
-                .SendAsync("message_created", message.MapToMessageResponse(services.Options.Value));
+        await services.HubContext.Clients.All
+            .SendAsync("message_created", message.MapToMessageResponse(services.Options.Value));
 
         if (result < 0) return TypedResults.BadRequest("Something went wrong");
 

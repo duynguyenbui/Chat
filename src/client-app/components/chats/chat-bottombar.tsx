@@ -7,17 +7,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Textarea } from '../ui/textarea';
 import { EmojiPicker } from './emoji-picker';
 import { Message, User } from '@/types';
+import ChatImageUpload from './chat-image';
 
 interface ChatBottombarProps {
   sendMessage: (newMessage: Message) => void;
   isMobile: boolean;
   loggedInUserData: User;
+  conversationId: string;
 }
 
 export default function ChatBottombar({
   sendMessage,
   isMobile,
   loggedInUserData,
+  conversationId,
 }: ChatBottombarProps) {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -91,16 +94,8 @@ export default function ChatBottombar({
       <div className="flex">
         {!message.trim() && !isMobile && (
           <div className="flex">
-            <Link
-              href="#"
-              className={cn(
-                buttonVariants({ variant: 'ghost', size: 'icon' }),
-                'h-9 w-9',
-                'dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted ml-2 dark:hover:text-white'
-              )}
-            >
-              <FileImage size={20} className="text-muted-foreground" />
-            </Link>
+            {/* TODO: Chat Image Upload Button */}
+            <ChatImageUpload conversationId={conversationId} />
           </div>
         )}
       </div>

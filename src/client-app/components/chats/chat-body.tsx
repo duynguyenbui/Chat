@@ -15,6 +15,7 @@ import ChatBottomBar from './chat-bottombar';
 import { EmptyState } from './empty-state';
 import { seen } from '@/actions/seen';
 import { message } from '@/actions/message';
+import Image from 'next/image';
 
 interface ChatBodyProps {
   messages?: Message[];
@@ -150,16 +151,28 @@ const ChatBody = ({
                 )}
 
                 <span className="bg-accent p-3 rounded-md max-w-xs">
-                  <div className="flex items-center gap-2">
-                    {messagesState.length - 1 === index && (
-                      <h5 className="text-xs text-muted-foreground">
-                        <time suppressHydrationWarning>
-                          {new Date(message.createdAt).toLocaleTimeString() ||
-                            '00:00 AM'}
-                        </time>
-                      </h5>
-                    )}
-                    {message.content}
+                  <div className="flex flex-col items-start gap-2">
+                    <div>
+                      {message.content !== '' && message.content}
+                      {message.imageFileName !== '' && (
+                        <Image
+                          height={300}
+                          width={300}
+                          src={`http://localhost:5000/api/v1/chat/messages/${message.messageId}/pic`}
+                          alt={message.messageId}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      {messagesState.length - 1 === index && (
+                        <h5 className="text-xs text-muted-foreground ">
+                          <time suppressHydrationWarning>
+                            {new Date(message.createdAt).toLocaleTimeString() ||
+                              '00:00 AM'}
+                          </time>
+                        </h5>
+                      )}
+                    </div>
                   </div>
                   <span className="text-xs text-muted-foreground text-end">
                     {message.seen.filter(
@@ -190,6 +203,7 @@ const ChatBody = ({
         </AnimatePresence>
       </div>
       <ChatBottomBar
+        conversationId={conversationId}
         isMobile={false}
         sendMessage={sendMessage}
         loggedInUserData={selectedUser}

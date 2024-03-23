@@ -18,7 +18,7 @@ const ConversationIdPage = async ({
     <div className="flex flex-col justify-between w-full h-full">
       <ChatTopbar conversation={conversation} />
       <ChatBody
-        conversationId={conversation.conversationId}
+        conversationId={conversation.conversationId || ''}
         messages={conversation.messages}
         selectedUser={conversation.users.find(
           (user) => user.name === session?.user.name
