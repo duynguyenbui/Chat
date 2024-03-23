@@ -21,6 +21,9 @@ public static partial class Extensions
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
+        // Just setting the name of XSRF token
+        builder.Services.AddAntiforgery(options => options.HeaderName = "x-xsrf-token");
+        
         builder.Services.AddCors(options => options.AddPolicy("client", pb =>
             pb.WithOrigins(builder.Configuration.GetSection("Client").GetRequiredValue("BaseUrl"))
                 .AllowAnyMethod()

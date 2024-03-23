@@ -6,7 +6,6 @@ export const message = async (
   message: {
     conversationId: string;
     content?: string;
-    imageFileName?: string;
   },
   connectionId?: string | null
 ) => {

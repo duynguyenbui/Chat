@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Antiforgery;
+
 namespace Chat.Server.Apis;
 
 public static class ChatApis
@@ -15,7 +17,16 @@ public static class ChatApis
 
         // Routes for messages.
         app.MapPost("/messages", CreateMessage);
-        app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById);
+        app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
+        {
+            var tokens = forgeryService.GetAndStoreTokens(context);
+            var xsrfToken = tokens.RequestToken!;
+            return TypedResults.Content(xsrfToken, "text/plain");
+        });
+        //.RequireAuthorization(); // In a real world scenario, you'll only give this token to authorized users
+
+        app.MapPost("/messages/pics", CreateImageMessage);
+        app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
 
         return app;
@@ -60,8 +71,8 @@ public static class ChatApis
     }
 
     public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>> CreateMessage(
-    [AsParameters] ChatServices services, [FromHeader(Name = "x-connectionid")] string? connectionId,
-    CreateMessageRequest request, IFormFile Image)
+        [AsParameters] ChatServices services, [FromHeader(Name = "x-connectionid")] string? connectionId,
+        CreateMessageRequest request)
     {
         var user = await services.IdentityService.GetCurrentUser();
 
@@ -84,30 +95,14 @@ public static class ChatApis
             return TypedResults.BadRequest(
                 $"Couldn't find user with {user.Id} in this conversation {request.ConversationId}");
 
-        // TODO: Implement Send Image Later 
         var message = new Message
         {
             Content = request.Content,
             Sender = user,
-            ImageFileName = request.ImageFileName,
+            ImageFileName = string.Empty,
             Conversation = conversation,
             Seen = [user]
         };
-
-        if (Image != null)
-        {
-            // Save Image
-            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Pics");
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Image.FileName);
-            var filePath = Path.Combine(uploadsPath, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await Image.CopyToAsync(stream);
-            }
-
-            message.ImageFileName = fileName;
-        }
 
         conversation.Messages?.Add(message);
         conversation.LastMessageAt = DateTime.UtcNow;
@@ -123,6 +118,74 @@ public static class ChatApis
 
         return TypedResults.Ok(message.MapToMessageResponse(services.Options.Value));
     }
+
+    public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>>
+        CreateImageMessage([AsParameters] ChatServices services,
+            [FromHeader(Name = "x-connectionid")] string? connectionId,
+            [FromHeader(Name = "x-xsrf-token")] string? xsrfToken,
+            string conversationId,
+            IFormFile? image)
+    {
+        var user = await services.IdentityService.GetCurrentUser();
+
+        if (user is null) return TypedResults.Unauthorized();
+
+        if (image is null)
+        {
+            return TypedResults.BadRequest("Missing data");
+        }
+
+        var conversation = await services.Context.Conversations
+            .Include(conversation => conversation.Messages)
+            .Include(conversation => conversation.Users)
+            .FirstOrDefaultAsync(x => string.Equals(x.Id, conversationId));
+
+        if (conversation is null)
+            return TypedResults.BadRequest($"Couldn't find this conversation {conversationId}");
+
+        if (!conversation.Users.Contains(user))
+            return TypedResults.BadRequest(
+                $"Couldn't find user with {user.Id} in this conversation {conversationId}");
+
+        var message = new Message
+        {
+            Sender = user,
+            ImageFileName = string.Empty,
+            Conversation = conversation,
+            Seen = [user]
+        };
+
+        try
+        {
+            // Save Image
+            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Pics");
+            var fileName = message.Id + Path.GetExtension(image.FileName);
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            message.ImageFileName = fileName;
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await image.CopyToAsync(stream);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        conversation.Messages?.Add(message);
+        conversation.LastMessageAt = DateTime.UtcNow;
+
+        var result = await services.Context.SaveChangesAsync();
+
+        if (!string.IsNullOrEmpty(connectionId))
+            await services.HubContext.Clients.GroupExcept(conversation.Id, connectionId)
+                .SendAsync("message_created", message.MapToMessageResponse(services.Options.Value));
+
+        if (result < 0) return TypedResults.BadRequest("Something went wrong");
+
+        return TypedResults.Ok(message.MapToMessageResponse(services.Options.Value));
+    }
+
 
     public static async Task<Results<NoContent, NotFound>> DeleteMessage([AsParameters] ChatServices services,
         string messageId)
@@ -290,11 +353,16 @@ public static class ChatApis
 
         var path = GetFullPath(environment.ContentRootPath, item.ImageFileName);
 
-        string imageFileExtension = Path.GetExtension(item.ImageFileName);
-        string mimetype = GetImageMimeTypeFromImageFileExtension(imageFileExtension);
-        DateTime lastModified = File.GetLastWriteTimeUtc(path);
+        var imageFileExtension = Path.GetExtension(item.ImageFileName);
+        if (imageFileExtension != null)
+        {
+            var mimetype = GetImageMimeTypeFromImageFileExtension(imageFileExtension);
+            var lastModified = File.GetLastWriteTimeUtc(path);
 
-        return TypedResults.PhysicalFile(path, mimetype, lastModified: lastModified);
+            return TypedResults.PhysicalFile(path, mimetype, lastModified: lastModified);
+        }
+
+        return TypedResults.NotFound();
     }
 
     private static string GetImageMimeTypeFromImageFileExtension(string extension) => extension switch

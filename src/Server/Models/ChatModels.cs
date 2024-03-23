@@ -2,7 +2,7 @@ namespace Chat.Server.Models;
 
 public record CreateConversationRequest(string? UserId, string[]? Members, string? Name, bool IsGroup = false);
 
-public record CreateMessageRequest(string ConversationId, string? Content, string? ImageFileName);
+public record CreateMessageRequest(string ConversationId, string? Content);
 
 public record UserResponse(string Id, string Name, string Image, string Email);
 

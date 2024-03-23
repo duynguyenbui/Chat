@@ -7,6 +7,7 @@ var app = builder.Build();
 
 app.UseDefaultOpenApi();
 
+app.UseAntiforgery();
 app.UseCors("client");
 
 app.MapGroup("/api/v1/identity").WithTags("Identity Apis")

@@ -17,6 +17,7 @@ export interface Message {
   updatedAt: string;
   sender: User;
   seen: User[];
+  image?: FileList | null | undefined;
 }
 
 export interface User {

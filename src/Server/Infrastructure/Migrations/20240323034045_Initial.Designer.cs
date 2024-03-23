@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Chat.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20240217044348_Initial")]
+    [Migration("20240323034045_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -57,7 +57,6 @@ namespace Chat.Server.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 

@@ -118,7 +118,7 @@ namespace Chat.Server.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    Content = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Content = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
                     ImageFileName = table.Column<string>(type: "text", nullable: true),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
