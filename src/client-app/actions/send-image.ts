@@ -1,7 +1,5 @@
 'use server';
 
-'use server';
-
 import axiosInterceptorInstance from '@/lib/api';
 
 export const sendImage = async (

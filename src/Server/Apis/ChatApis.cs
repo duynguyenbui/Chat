@@ -157,6 +157,12 @@ public static class ChatApis
         {
             // Save Image
             var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Pics");
+
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
             var fileName = message.Id + Path.GetExtension(image.FileName);
             var filePath = Path.Combine(uploadsPath, fileName);
 

@@ -8,7 +8,6 @@ public static partial class Extensions
             options => options.UseNpgsql(builder.Configuration.GetConnectionString("ChatDB")));
 
         // NOTE: This is done for development ease but shouldn't be here in production
-        // TODO: This is raise an exception in testing environments so check it before you run tests
         builder.Services.AddMigration<ChatContext, ChatContextSeed>();
 
         builder.Services.AddAuthorization();
