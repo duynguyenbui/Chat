@@ -8,7 +8,6 @@ public static partial class Extensions
             options => options.UseNpgsql(builder.Configuration.GetConnectionString("ChatDB")));
 
         // NOTE: This is done for development ease but shouldn't be here in production
-        // TODO: This is raise an exception in testing environments so check it before you run tests
         builder.Services.AddMigration<ChatContext, ChatContextSeed>();
 
         builder.Services.AddAuthorization();
@@ -21,6 +20,12 @@ public static partial class Extensions
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
+        // Just setting the name of XSRF token
+        // builder.Services.AddAntiforgery(options =>
+        // {
+        //     options.HeaderName = "X-XSRF-TOKEN";
+        // });
+        
         builder.Services.AddCors(options => options.AddPolicy("client", pb =>
             pb.WithOrigins(builder.Configuration.GetSection("Client").GetRequiredValue("BaseUrl"))
                 .AllowAnyMethod()

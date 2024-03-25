@@ -6,12 +6,9 @@ export const message = async (
   message: {
     conversationId: string;
     content?: string;
-    imageFileName?: string;
   },
   connectionId?: string | null
 ) => {
-  // console.log(connectionId);
-  // console.log(message);
   const data = await axiosInterceptorInstance
     .post(
       `${process.env.API_SERVER_URL}/api/v1/chat/messages`,

@@ -34,7 +34,7 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
     [currentUser?.id],
     ([userId]) => getConversationByUserId(userId),
     {
-      refreshInterval: 4000,
+      refreshInterval: 2000,
     }
   );
 

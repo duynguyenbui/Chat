@@ -3,7 +3,7 @@ namespace Chat.Server.Models;
 public class Message
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Content { get; set; }
+    public string? Content { get; set; }
     public string? ImageFileName { get; set; }
 
     public bool Deleted { get; set; } = false;
