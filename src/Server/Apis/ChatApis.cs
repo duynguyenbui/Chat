@@ -174,8 +174,7 @@ public static class ChatApis
         {
             Console.WriteLine(e);
             throw;
-        }
-
+        }       
         conversation.Messages?.Add(message);
         conversation.LastMessageAt = DateTime.UtcNow;
 
