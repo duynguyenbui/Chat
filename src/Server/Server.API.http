@@ -1,0 +1,44 @@
+@Chat.API_HostAddress = http://localhost:5000
+
+### Test endpoint
+GET {{Chat.API_HostAddress}}/api/v1/secret
+
+### Register
+POST {{Chat.API_HostAddress}}/api/v1/identity/register
+Accept: */*
+Content-Type: application/json
+
+{
+  "email": "nguyen@email.com",
+  "password": "Nguyen@123"
+}
+
+### Login
+POST {{Chat.API_HostAddress}}/api/v1/identity/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "nguyen@email.com",
+  "password": "Nguyen@123"
+}
+
+### Register
+POST {{Chat.API_HostAddress}}/api/v1/identity/register
+Accept: */*
+Content-Type: application/json
+
+{
+  "email": "test@email.com",
+  "password": "Test@123"
+}
+
+### Login
+POST {{Chat.API_HostAddress}}/api/v1/identity/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "test@email.com",
+  "password": "Test@123"
+}

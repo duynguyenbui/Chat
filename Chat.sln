@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9C01293F-9807-450A-AE7E-488F886CA44F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "src\Server\Server.csproj", "{7872C798-C50B-46F8-9F96-4FCEA62435A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9FC28543-4033-4A15-BF2E-5C7AE0A49111}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		.gitignore = .gitignore
+		README.md = README.md
+		.dockerignore = .dockerignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C940B67E-6A87-4C0C-BC11-4BB9357DBC82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.UnitTests", "tests\Server.UnitTests\Server.UnitTests.csproj", "{E7A80646-E814-419E-B2C6-1DFB46E4A948}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.FunctionalTests", "tests\Server.FunctionalTests\Server.FunctionalTests.csproj", "{D9C464FF-61D8-4538-A60F-F729BA76F247}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7872C798-C50B-46F8-9F96-4FCEA62435A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7872C798-C50B-46F8-9F96-4FCEA62435A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7872C798-C50B-46F8-9F96-4FCEA62435A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7872C798-C50B-46F8-9F96-4FCEA62435A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7A80646-E814-419E-B2C6-1DFB46E4A948}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7A80646-E814-419E-B2C6-1DFB46E4A948}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7A80646-E814-419E-B2C6-1DFB46E4A948}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7A80646-E814-419E-B2C6-1DFB46E4A948}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9C464FF-61D8-4538-A60F-F729BA76F247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9C464FF-61D8-4538-A60F-F729BA76F247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9C464FF-61D8-4538-A60F-F729BA76F247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9C464FF-61D8-4538-A60F-F729BA76F247}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7872C798-C50B-46F8-9F96-4FCEA62435A8} = {9C01293F-9807-450A-AE7E-488F886CA44F}
+		{E7A80646-E814-419E-B2C6-1DFB46E4A948} = {C940B67E-6A87-4C0C-BC11-4BB9357DBC82}
+		{D9C464FF-61D8-4538-A60F-F729BA76F247} = {C940B67E-6A87-4C0C-BC11-4BB9357DBC82}
+	EndGlobalSection
+EndGlobal
