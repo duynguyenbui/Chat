@@ -21,12 +21,10 @@ const ChatImageUpload = ({ conversationId }: { conversationId: string }) => {
     setFile(selectedFile);
 
     console.log(selectedFile);
-    // TODO: Handle file logic to send to server
 
     console.log(conversationId);
 
     if (conversationId) {
-      console.log('HERE');
       var formData = new FormData();
       formData.append('image', selectedFile);
 
@@ -40,10 +38,7 @@ const ChatImageUpload = ({ conversationId }: { conversationId: string }) => {
   return (
     <div>
       <div
-        className={cn(
-          'h-9 w-9',
-          'dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted ml-2 dark:hover:text-white'
-        )}
+        className="h-9 w-9 dark:bg-dark-input dark:text-muted-foreground dark:hover:bg-dark-input ml-2 dark:hover:text-white"
         onClick={handleClick}
       >
         <FileImage />

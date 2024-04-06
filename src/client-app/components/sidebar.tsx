@@ -142,11 +142,10 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
               </Avatar>
               <div className="flex flex-col max-w-28">
                 <span className="flex gap-2 items-center">
-                  {(conversation?.name === null &&
+                  {conversation?.name === null &&
                     conversation.users.find(
                       (user) => user?.name !== currentUser?.email
-                    )?.name) ||
-                    'N'}
+                    )?.name}
                   {conversation.name}
                   <time
                     suppressHydrationWarning

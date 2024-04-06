@@ -62,6 +62,8 @@ export const createConversation = async (
 
   const { name, isGroup, userId, members } = validatedFields.data;
 
+  console.log(validatedFields.data);
+
   if (!isGroup) {
     if (!userId) return { error: 'Missing user pair!' };
 
@@ -70,7 +72,13 @@ export const createConversation = async (
         userId: userId,
         isGroup: false,
       })
-      .then((res) => res.data)
+      .then((res) => {
+        if (res.status === 500) {
+          return { error: 'Something went wrong' };
+        }
+
+        return res.data;
+      })
       .catch((err) => {
         console.error(err.message);
         return { error: 'Something went wrong' };

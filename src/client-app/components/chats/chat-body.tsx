@@ -152,7 +152,7 @@ const ChatBody = ({
 
                                 <span className="bg-accent p-3 rounded-md max-w-xs">
                   <div className="flex flex-col items-start gap-2">
-                    <div className="bg-indigo-300">
+                    <div>
                       {message.content !== '' && message.content}
                         {message.imageFileName !== '' && (
                             <Image

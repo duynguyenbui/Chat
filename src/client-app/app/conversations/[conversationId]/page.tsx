@@ -4,7 +4,7 @@ import ChatBody from '@/components/chats/chat-body';
 import { ChatTopbar } from '@/components/chats/chat-topbar';
 import React from 'react';
 
-// export const revalidate = 0; // revalidate at most every hour
+export const revalidate = 0;
 
 const ConversationIdPage = async ({
   params,
@@ -18,8 +18,8 @@ const ConversationIdPage = async ({
     <div className="flex flex-col justify-between w-full h-full">
       <ChatTopbar conversation={conversation} />
       <ChatBody
-        conversationId={conversation.conversationId || ''}
-        messages={conversation.messages}
+        conversationId={conversation?.conversationId || ''}
+        messages={conversation?.messages}
         selectedUser={conversation.users.find(
           (user) => user.name === session?.user.name
         )}

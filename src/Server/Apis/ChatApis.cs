@@ -174,7 +174,8 @@ public static class ChatApis
         {
             Console.WriteLine(e);
             throw;
-        }       
+        }
+
         conversation.Messages?.Add(message);
         conversation.LastMessageAt = DateTime.UtcNow;
 
@@ -240,8 +241,10 @@ public static class ChatApis
         if (user is null) return TypedResults.Unauthorized();
 
         if (request.IsGroup &&
-            (request?.Members != null || request?.Members?.Length < 2 || !string.IsNullOrEmpty(request?.Name)))
+            (request?.Members?.Length < 2 || string.IsNullOrEmpty(request?.Name)))
+        {
             return TypedResults.BadRequest("Invalid data");
+        }
 
         if (request.IsGroup)
         {
@@ -254,9 +257,22 @@ public static class ChatApis
                 .Where(u => request.Members != null && request.Members.Contains(u.Id))
                 .ToListAsync();
 
+            var enumerable = users.Append(user);
+
+            var existingGroupConversation = await services.Context.Conversations
+                .Include(c => c.Users)
+                .Where(c => c.IsGroup && c.Name == request.Name && c.Users.Count == request.Members.Length + 1 &&
+                            c.Users.All(u => enumerable.Contains(u)))
+                .FirstOrDefaultAsync();
+
+            if (existingGroupConversation != null && existingGroupConversation.Name == request.Name)
+            {
+                return TypedResults.BadRequest("Group conversation already exists with specified members");
+            }
+
             var groupConversation = new Conversation
             {
-                Name = request.Name, IsGroup = true, Users = users
+                Name = request.Name, IsGroup = true, Users = [..users, user]
             };
 
             await services.Context.Conversations.AddAsync(groupConversation);
@@ -280,7 +296,8 @@ public static class ChatApis
         }
 
         var existingConversation = await services.Context.Conversations
-            .Where(conversation => conversation.Users.Contains(user) && conversation.Users.Contains(userPair))
+            .Where(conversation => conversation.Users.Contains(user) && conversation.Users.Contains(userPair) &&
+                                   !conversation.IsGroup)
             .FirstOrDefaultAsync();
 
         if (existingConversation is not null)

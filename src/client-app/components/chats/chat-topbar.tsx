@@ -33,27 +33,31 @@ export const ChatTopbar = ({ conversation }: ChatTopbarProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-start justify-center">
-          <div className="flex space-x-2 items-center">
-            <h2 className="font-bold text-muted-foreground">
-              {conversation.name !== null
-                ? conversation.name
-                : conversation.users.find((u) => u.name !== user?.name)?.name ||
-                  'DN'}
-            </h2>
-            <div className="flex space-x-1">
-              <TimerIcon className="h-4 w-4" />
-              <h3 className="text-xs text-gray-400 mt-[1px]">
-                <time suppressHydrationWarning>
-                  {new Date(conversation.lastMessageAt).toLocaleString()}
-                </time>
-              </h3>
+          <div className="flex">
+            <div>
+              <div className="flex space-x-2 items-center">
+                <h2 className="font-bold text-muted-foreground">
+                  {conversation.name !== null
+                    ? conversation.name
+                    : conversation.users.find((u) => u.name !== user?.name)
+                        ?.name || 'DN'}
+                </h2>
+                <div className="flex space-x-1">
+                  <TimerIcon className="h-4 w-4" />
+                  <h3 className="text-xs text-gray-400 mt-[1px]">
+                    <time suppressHydrationWarning>
+                      {new Date(conversation.lastMessageAt).toLocaleString()}
+                    </time>
+                  </h3>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {conversation.conversationId}
+              </span>
             </div>
-          </div>
 
-          <span className="text-xs text-muted-foreground">
-            {conversation.conversationId}
-          </span>
-          {conversation.isGroup && <Users />}
+            <div className="ml-2 mt-2">{conversation.isGroup && <Users />}</div>
+          </div>
         </div>
       </div>
 
