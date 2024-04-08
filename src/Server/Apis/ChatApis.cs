@@ -17,6 +17,7 @@ public static class ChatApis
 
         // Routes for messages.
         app.MapPost("/messages", CreateMessage);
+        app.MapGet("/conversations/find/messages/{conversationId:minlength(1)}", FindMessage);
         // app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
         // {
         //     var tokens = forgeryService.GetAndStoreTokens(context);
@@ -24,6 +25,7 @@ public static class ChatApis
         //     return TypedResults.Content(xsrfToken, "text/plain");
         // });
         //.RequireAuthorization(); // In a real world scenario, you'll only give this token to authorized users
+
 
         app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery();
         app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
@@ -42,7 +44,7 @@ public static class ChatApis
 
         var conversation = await services.Context.Conversations
             .Include(conversation => conversation.Users)
-            .Include(conversation => conversation.Messages)
+            .Include(conversation => conversation.Messages)!
             .ThenInclude(list => list.Seen)
             .Where(conversation => conversation.Id == conversationId)
             .FirstOrDefaultAsync();
@@ -117,6 +119,35 @@ public static class ChatApis
         if (result < 0) return TypedResults.BadRequest("Something went wrong");
 
         return TypedResults.Ok(message.MapToMessageResponse(services.Options.Value));
+    }
+
+    public static async Task<Results<Ok<List<MessageResponse>>, NotFound, UnauthorizedHttpResult>>
+        FindMessage([AsParameters] ChatServices services, string conversationId, [FromQuery] string contentToFind)
+    {
+        var user = await services.IdentityService.GetCurrentUser();
+        if (user is null) return TypedResults.Unauthorized();
+
+        if (string.IsNullOrEmpty(contentToFind)) return TypedResults.NotFound();
+
+        var conversation =
+            await services.Context.Conversations
+                .Include(c => c.Users)
+                .Where(c => c.Id == conversationId && c.Users.Contains(user))
+                .FirstOrDefaultAsync();
+
+        if (conversation == null) return TypedResults.NotFound();
+
+        var messages = await services.Context.Messages
+            .Include(m => m.Sender)
+            .Include(m => m.Seen)
+            .Where(message => message.ConversationId == conversation.Id)
+            .Where(message => message.Content != null && message.Content.Contains(contentToFind))
+            .ToListAsync();
+
+        var chatOptions = services.Options.Value;
+        var messageResponses = messages.Select(message => message.MapToMessageResponse(chatOptions)).ToList();
+
+        return TypedResults.Ok(messageResponses);
     }
 
     public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>>
