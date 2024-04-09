@@ -1,3 +1,5 @@
+using OpenAI.Net;
+
 namespace Chat.Server.Extensions;
 
 public static partial class Extensions
@@ -21,11 +23,8 @@ public static partial class Extensions
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
         // Just setting the name of XSRF token
-        // builder.Services.AddAntiforgery(options =>
-        // {
-        //     options.HeaderName = "X-XSRF-TOKEN";
-        // });
-        
+        // builder.Services.AddAntiforgery(options => { options.HeaderName = "X-XSRF-TOKEN" });
+
         builder.Services.AddCors(options => options.AddPolicy("client", pb =>
             pb.WithOrigins(builder.Configuration.GetSection("Client").GetRequiredValue("BaseUrl"))
                 .AllowAnyMethod()
@@ -35,5 +34,20 @@ public static partial class Extensions
         builder.Services.AddSignalR();
         builder.Services.AddOptions<ChatOptions>()
             .BindConfiguration(nameof(ChatOptions));
+
+        // AI Options Binding
+        builder.Services.AddOptions<AIOptions>()
+            .BindConfiguration(nameof(AIOptions));
+
+        if (builder.Configuration.GetSection("AI") != null)
+        {
+            builder.Services.AddOpenAIServices(options =>
+            {
+                options.ApiUrl = builder.Configuration["AI:OpenAI:BaseUrl"]!;
+                options.ApiKey = builder.Configuration["AI:OpenAI:ApiKey"]!;
+            });
+        }
+
+        builder.Services.AddScoped<IChatAI, ChatAI>();
     }
 }

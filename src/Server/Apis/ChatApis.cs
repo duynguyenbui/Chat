@@ -26,10 +26,13 @@ public static class ChatApis
         // });
         //.RequireAuthorization(); // In a real world scenario, you'll only give this token to authorized users
 
-
         app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery();
         app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
+
+        // Routes for AI assistant.
+        app.MapPost("/messages/ai", AIAssistantWithoutStream).AllowAnonymous();
+        app.MapGet("/messages/ai/stream", AIAssistantWithStream).AllowAnonymous();
 
         return app;
     }
@@ -413,6 +416,26 @@ public static class ChatApis
         }
 
         return TypedResults.NotFound();
+    }
+
+    public static async Task<string?> AIAssistantWithoutStream([FromBody] SendMessageInput input,
+        [AsParameters] ChatServices services)
+    {
+        return await services.ChatAI.Send(input);
+    }
+
+    public static async Task AIAssistantWithStream(HttpContext context, [FromQuery] string input,
+        [AsParameters] ChatServices services, CancellationToken cancellationToken)
+    {
+        context.Response.ContentType = "text/event-stream";
+
+        await foreach (var r in services.ChatAI.SendStream(input).WithCancellation(cancellationToken))
+        {
+            if (r != null) await context.Response.WriteAsync(r, cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+
+        await context.Response.CompleteAsync();
     }
 
     private static string GetImageMimeTypeFromImageFileExtension(string extension) => extension switch

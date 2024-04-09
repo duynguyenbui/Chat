@@ -13,5 +13,10 @@
     "Id": "c87e1238-b36c-4ebc-a423-ca4305b88b4c",
     "Email": "bui@email.com",
     "Password": "Bui@123"
+  },
+  {
+    "Id": "b91a9cb7-fa92-4683-b5bd-51e7fd20eace",
+    "Email": "ai@email.com",
+    "Password": "Ai@123"
   }
 ]
