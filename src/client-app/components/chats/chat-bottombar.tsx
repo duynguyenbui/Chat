@@ -8,12 +8,14 @@ import { Textarea } from '../ui/textarea';
 import { EmojiPicker } from './emoji-picker';
 import { Message, User } from '@/types';
 import ChatImageUpload from './chat-image';
+import { generateMessage } from '@/lib/message-utils';
 
 interface ChatBottombarProps {
   sendMessage: (newMessage: Message) => void;
   isMobile: boolean;
   loggedInUserData: User;
-  conversationId: string;
+  conversationId?: string;
+  isAIConversation?: boolean;
 }
 
 export default function ChatBottombar({
@@ -21,6 +23,7 @@ export default function ChatBottombar({
   isMobile,
   loggedInUserData,
   conversationId,
+  isAIConversation = false,
 }: ChatBottombarProps) {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -30,49 +33,13 @@ export default function ChatBottombar({
   };
 
   const handleThumbsUp = () => {
-    const newMessage: Message = {
-      messageId: crypto.randomUUID(),
-      content: '👍',
-      imageFileName: '',
-      createdAt: new Date().toString(),
-      updatedAt: new Date().toString(),
-      sender: {
-        id: loggedInUserData.id,
-        name: loggedInUserData.name,
-        email: loggedInUserData.email,
-      },
-      seen: [
-        {
-          id: loggedInUserData.id,
-          name: loggedInUserData.name,
-          email: loggedInUserData.email,
-        },
-      ],
-    };
+    const newMessage = generateMessage('👍', loggedInUserData);
     sendMessage(newMessage);
     setMessage('');
   };
 
   const handleSend = () => {
-    const newMessage: Message = {
-      messageId: crypto.randomUUID(),
-      content: message,
-      imageFileName: '',
-      createdAt: new Date().toString(),
-      updatedAt: new Date().toString(),
-      sender: {
-        id: loggedInUserData.id,
-        name: loggedInUserData.name,
-        email: loggedInUserData.email,
-      },
-      seen: [
-        {
-          id: loggedInUserData.id,
-          name: loggedInUserData.name,
-          email: loggedInUserData.email,
-        },
-      ],
-    };
+    const newMessage = generateMessage(message, loggedInUserData);
     sendMessage(newMessage);
     setMessage('');
   };
@@ -91,14 +58,16 @@ export default function ChatBottombar({
 
   return (
     <div className="p-2 flex justify-between w-full items-center gap-2">
-      <div className="flex">
-        {!message.trim() && !isMobile && (
-          <div className="flex">
-            {/* TODO: Chat Image Upload Button */}
-            <ChatImageUpload conversationId={conversationId} />
-          </div>
-        )}
-      </div>
+      {!isAIConversation && (
+        <div className="flex">
+          {!message.trim() && !isMobile && (
+            <div className="flex">
+              {/* TODO: Chat Image Upload Button */}
+              <ChatImageUpload conversationId={conversationId!} />
+            </div>
+          )}
+        </div>
+      )}
 
       <AnimatePresence initial={false}>
         <motion.div
@@ -150,7 +119,7 @@ export default function ChatBottombar({
           >
             <SendHorizontal size={20} className="text-muted-foreground" />
           </Link>
-        ) : (
+        ) : !isAIConversation ? (
           <Link
             href="#"
             className={cn(
@@ -162,6 +131,8 @@ export default function ChatBottombar({
           >
             <ThumbsUp size={20} className="text-muted-foreground" />
           </Link>
+        ) : (
+          <></>
         )}
       </AnimatePresence>
     </div>

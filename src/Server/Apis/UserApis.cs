@@ -130,7 +130,7 @@ public static class UserApis
                     return TypedResults.NotFound();
                 }
 
-                var users = await userManager.Users.Where(u => u.Id != user.Id).Select(u => u.MapToUserResponse())
+                var users = await userManager.Users.Where(u => u.Id != user.Id && u.Id != "b91a9cb7-fa92-4683-b5bd-51e7fd20eace").Select(u => u.MapToUserResponse())
                     .ToListAsync();
 
                 return TypedResults.Ok(users);

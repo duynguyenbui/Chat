@@ -48,6 +48,6 @@ public static partial class Extensions
             });
         }
 
-        builder.Services.AddScoped<IChatAI, ChatAI>();
+        builder.Services.AddSingleton<IChatAI, ChatAI>();
     }
 }

@@ -106,7 +106,7 @@ const ChatBody = ({
   }, [messagesState]);
 
   if (!selectedUser) {
-    return <EmptyState />;
+    return <EmptyState content="Select a chat or start a new conversation" />;
   }
 
   return (

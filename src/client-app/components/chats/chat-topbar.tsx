@@ -21,7 +21,7 @@ export const ChatTopbar = ({ conversation }: ChatTopbarProps) => {
   const user = useCurrentUser();
 
   if (!conversation) {
-    return <EmptyState />;
+    return <EmptyState content={''} />;
   }
 
   return (

@@ -87,7 +87,7 @@ public sealed class ChatAI : IChatAI
                            options.Temperature = 0.7f;
                        }))
         {
-            yield return t?.Result?.Choices[0].Delta?.Content;
+            yield return t.Result?.Choices[0].Delta.Content;
         }
     }
 }

@@ -418,15 +418,35 @@ public static class ChatApis
         return TypedResults.NotFound();
     }
 
-    public static async Task<string?> AIAssistantWithoutStream([FromBody] SendMessageInput input,
+    public static async Task<Results<Ok<string>, UnauthorizedHttpResult>> AIAssistantWithoutStream(
+        [FromBody] SendMessageInput input,
         [AsParameters] ChatServices services)
     {
-        return await services.ChatAI.Send(input);
+        var user = await services.IdentityService.GetCurrentUser();
+
+        if (user is null) return TypedResults.Unauthorized();
+
+        var result = await services.ChatAI.Send(input);
+
+        return TypedResults.Ok(result);
     }
 
     public static async Task AIAssistantWithStream(HttpContext context, [FromQuery] string input,
         [AsParameters] ChatServices services, CancellationToken cancellationToken)
     {
+        // REVIEW: Just for testing purposes so we don't need to check user credentials
+        // var user = await services.IdentityService.GetCurrentUser();
+        //
+        // if (user is null)
+        // {
+        //     context.Request.ContentType = "text/plain";
+        //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        //     await context.Response.WriteAsync("You must be logged in to use AI Assistant",
+        //         cancellationToken: cancellationToken);
+        //     await context.Response.CompleteAsync();
+        // }
+        // else
+        // {
         context.Response.ContentType = "text/event-stream";
 
         await foreach (var r in services.ChatAI.SendStream(input).WithCancellation(cancellationToken))
@@ -436,6 +456,7 @@ public static class ChatApis
         }
 
         await context.Response.CompleteAsync();
+        // }
     }
 
     private static string GetImageMimeTypeFromImageFileExtension(string extension) => extension switch
