@@ -6,8 +6,10 @@ import { Message, User } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { generateAIMessage } from '@/lib/message-utils';
 import { StarsIcon } from 'lucide-react';
+import { getUrlEnvironment } from '@/lib/get-environment';
+
+const apiUrl = getUrlEnvironment();
 
 const ChatAI = ({ user }: { user: User }) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -22,11 +24,7 @@ const ChatAI = ({ user }: { user: User }) => {
   const handleStream = (query: string) => {
     // Fetch the event stream from the server
     // Change URL to environment variable for production
-    fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_SERVER_URL || 'https://api.chatapp.com'
-      }/api/v1/chat/messages/ai/stream?input=${query}`
-    )
+    fetch(`${apiUrl}/api/v1/chat/messages/ai/stream?input=${query}`)
       .then((response) => {
         // Get the readable stream from the response body
 

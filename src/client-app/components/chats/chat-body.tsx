@@ -17,12 +17,15 @@ import { seen } from '@/actions/seen';
 import { message } from '@/actions/message';
 import Image from 'next/image';
 import { useModal } from '@/hooks/use-store-modal';
+import { getUrlEnvironment } from '@/lib/get-environment';
 
 interface ChatBodyProps {
   messages?: Message[];
   selectedUser?: User;
   conversationId: string;
 }
+
+const apiUrl = getUrlEnvironment();
 
 const ChatBody = ({
   messages = [],
@@ -38,10 +41,7 @@ const ChatBody = ({
    */
   useEffect(() => {
     const HubConnection = new HubConnectionBuilder()
-      .withUrl(
-        `${process.env.NEXT_PUBLIC_NOTIFY_SERVER_URL}` ||
-          'https://api.chatapp.com/api/v1/notify'
-      )
+      .withUrl(`${apiUrl}/api/v1/notify`)
       .withAutomaticReconnect()
       .build();
 
@@ -55,10 +55,7 @@ const ChatBody = ({
           .start()
           .then(() => {
             console.log(
-              `Connected to ${
-                process.env.NEXT_PUBLIC_NOTIFY_SERVER_URL ||
-                'http://localhost:5000/api/v1/notify'
-              } with connection ID:::`,
+              `Connected to ${apiUrl} with connection ID:::`,
               connection.connectionId
             );
             seen(conversationId, connection.connectionId);
@@ -170,10 +167,7 @@ const ChatBody = ({
                           }
                           height={300}
                           width={300}
-                          src={`${
-                            process.env.NEXT_PUBLIC_API_SERVER_URL ||
-                            'https://api.chatapp.com'
-                          }/api/v1/chat/messages/${message.messageId}/pic`}
+                          src={`${apiUrl}/api/v1/chat/messages/${message.messageId}/pic`}
                           alt={message.messageId}
                           unoptimized={true}
                         />

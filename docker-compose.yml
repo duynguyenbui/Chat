@@ -14,11 +14,13 @@
       - 5000:80
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - AI__OpenAI__BaseUrl=http://host.docker.internal:1234/v1
       - ASPNETCORE_URLS=http://+:80
+      - AI__OpenAI__BaseUrl=http://host.docker.internal:1234/v1
       - AI__OpenAI__ApiKey=lm-studio
-      - Client__BaseUrl=https://app.chatapp.com
       - AI__OpenAI__ModelName=lmstudio-ai/gemma-2b-it-GGUF/gemma-2b-it-q8_0.gguf
+      - Client__BaseUrl=https://app.chatapp.com
+      - ChatOptions__PicBaseUrl=https://api.chatapp.com/api/v1/chat/messages/[0]/pic/
+      - ChatOptions__PicAvatarUrl=https://api.chatapp.com/api/v1/identity/users/avatar/[0]/pic/
       - ConnectionStrings__ChatDB=Host=postgres-db;Port=5432;Database=ChatDB;Username=postgres;Password=postgrespw
       - VIRTUAL_HOST=api.chatapp.com
     depends_on:
