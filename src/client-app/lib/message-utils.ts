@@ -23,9 +23,9 @@ export function generateMessage(message: string, user: User) {
   return newMessage;
 }
 
-export function generateAIMessage(message: string, messageId: string) {
+export function generateAIMessage(message: string) {
   const newMessage: Message = {
-    messageId: messageId,
+    messageId: crypto.randomUUID(),
     content: message,
     imageFileName: '',
     createdAt: new Date().toString(),

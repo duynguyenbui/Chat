@@ -12,17 +12,25 @@ import { PropsWithChildren } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { User } from '@/types';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useModal } from '@/hooks/use-store-modal';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 export const AuthWrapper = ({
   children,
   isLogo,
   backUrl,
   large,
+  user,
 }: PropsWithChildren & {
   isLogo: boolean;
   backUrl?: string;
   large?: boolean;
+  user?: User;
 }) => {
+  const { onOpen } = useModal();
+
   return (
     <Card
       className={cn(
@@ -31,8 +39,23 @@ export const AuthWrapper = ({
       )}
     >
       <CardHeader className="flex items-start">
-        <Image src="/logo.svg" height={40} width={40} alt="Logo" />
-        {isLogo && <div className="text-xl font-semibold">Chat</div>}
+        <div className="flex gap-72 justify-between">
+          <div>
+            <Image src="/logo.svg" height={40} width={40} alt="Logo" />
+            {isLogo && <div className="text-xl font-semibold">Chat</div>}
+          </div>
+          {user && (
+            <div
+              className="mt-2"
+              onClick={() => onOpen('changeAvatar', { image: user?.image })}
+            >
+              <Avatar>
+                <AvatarImage src={user?.image} alt="Avatar" />
+                <AvatarFallback>ME</AvatarFallback>
+              </Avatar>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>{children}</CardContent>
       <CardFooter>

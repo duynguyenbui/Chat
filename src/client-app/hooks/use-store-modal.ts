@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 
-export type ModalType = 'createConversation' | 'deleteConversation' | 'showImage';
+export type ModalType =
+  | 'createConversation'
+  | 'deleteConversation'
+  | 'showImage'
+  | 'changeAvatar';
 
 interface Modal {
   type: ModalType | null;

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CreateConversation } from '../modals/create-conversation-modal';
 import { DeleteConversationModal } from '../modals/delete-conversation-modal';
 import ImageModal from '../modals/image-modal';
+import ChangeAvatarModal from '../modals/change-avatar-modal';
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -20,6 +21,7 @@ export const ModalProvider = () => {
       <DeleteConversationModal />
       <CreateConversation />
       <ImageModal />
+      <ChangeAvatarModal />
     </>
   );
 };

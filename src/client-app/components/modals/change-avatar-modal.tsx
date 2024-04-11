@@ -3,18 +3,44 @@
 import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { useModal } from '@/hooks/use-store-modal';
-import { FileImage } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { useToast } from '@/components/ui/use-toast';
+import { changeAvatar } from '@/actions/avatar';
+import { title } from 'process';
 
 const ChangeAvatarModal = () => {
   const { isOpen, onClose, type, data } = useModal();
+  const user = useCurrentUser();
+  const { toast } = useToast();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleClick = () => {
     fileInputRef?.current?.click();
   };
 
-  const handleChangeAvatar = () => {
-    // TODO: handle change avatar
+  const handleChangeAvatar = async (event: any) => {
+    if (!user) {
+      toast({
+        title: 'User is missing',
+        variant: 'destructive',
+      });
+    }
+
+    const selectedFile = event.target.files[0];
+
+    if (selectedFile !== null) {
+      var formData = new FormData();
+      formData.append('image', selectedFile);
+
+      changeAvatar(formData)
+        .then((res) =>
+          toast({ title: 'Change avatar successfully', variant: 'default' })
+        )
+        .catch((err) => toast({ title: err.message, variant: 'destructive' }));
+    }
+
+    onClose();
   };
 
   return (

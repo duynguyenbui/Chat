@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from '@/components/ui/tooltip';
-import { Avatar, AvatarFallback } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { getConversationByUserId } from '@/actions/conversations';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
@@ -112,6 +112,10 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
                     )}
                   >
                     <Avatar className="flex justify-center items-center">
+                      {/* <AvatarImage
+                        src={message.sender.image}
+                        alt={message.sender.name ?? ''}
+                      /> */}
                       <AvatarFallback className="w-10 h-10">
                         {(conversation?.name === null &&
                           conversation.users
@@ -152,6 +156,16 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
               )}
             >
               <Avatar className="flex justify-center items-center">
+                <AvatarImage
+                  src={
+                    (conversation?.name === null &&
+                      conversation.users.find(
+                        (user) => user?.name !== currentUser?.email
+                      )?.image) ||
+                    ''
+                  }
+                  alt={currentUser?.image ?? ''}
+                />
                 <AvatarFallback className="w-10 h-10">
                   {(conversation?.name === null &&
                     conversation.users
@@ -189,7 +203,7 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
                     }
                   </span>
                 )}
-              </div>{' '}
+              </div>
             </Link>
           )
         )}

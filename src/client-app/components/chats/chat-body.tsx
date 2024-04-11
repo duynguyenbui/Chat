@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Message, User } from '@/types';
 import { cn } from '@/lib/utils';
-import { Avatar } from '../ui/avatar';
+import { Avatar, AvatarImage } from '../ui/avatar';
 import { AvatarFallback } from '../ui/avatar';
 import ChatBottomBar from './chat-bottombar';
 import { EmptyState } from './empty-state';
@@ -144,8 +144,13 @@ const ChatBody = ({
               )}
             >
               <div className="flex gap-3 items-center">
+                {/* {JSON.stringify(message.sender)} */}
                 {message.sender.name !== selectedUser?.name && (
                   <Avatar className="flex justify-center items-center">
+                    <AvatarImage
+                      src={message.sender.image}
+                      alt={message.sender.image}
+                    />
                     <AvatarFallback>
                       {message.sender.name.at(0)?.toUpperCase() || 'YO'}
                     </AvatarFallback>
@@ -200,6 +205,10 @@ const ChatBody = ({
                 </span>
                 {message.sender.name === selectedUser?.name && (
                   <Avatar className="flex justify-center items-center">
+                    <AvatarImage
+                      src={selectedUser.image}
+                      alt={selectedUser.image}
+                    />
                     <AvatarFallback>
                       {message.sender.name.at(0)?.toUpperCase() || 'ME'}
                     </AvatarFallback>

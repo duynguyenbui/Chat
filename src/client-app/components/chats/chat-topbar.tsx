@@ -29,6 +29,16 @@ export const ChatTopbar = ({ conversation }: ChatTopbarProps) => {
       <div className="flex items-center gap-10">
         <div className="flex gap-3">
           <Avatar className="flex justify-center items-center">
+            <AvatarImage
+              src={
+                conversation.name !== null
+                  ? conversation.isGroup
+                    ? conversation.users[0].email.charAt(0).toUpperCase()
+                    : 'DN'
+                  : conversation.users.find((u) => u.email != user?.email)
+                      ?.image
+              }
+            />
             <AvatarFallback>
               {conversation.name !== null
                 ? conversation.name

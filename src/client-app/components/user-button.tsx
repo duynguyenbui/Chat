@@ -21,7 +21,7 @@ export default async function UserButton() {
         <ModeToggle />
         <SignIn provider="Credentials" />
       </div>
-    )
+    );
 
   return (
     <div className="flex items-center space-x-3">
@@ -38,6 +38,10 @@ export default async function UserButton() {
                 />
               )}
               <AvatarFallback>
+                <AvatarImage
+                  src={session.user.image}
+                  alt={session.user.image ?? ''}
+                />
                 {session?.user.email.charAt(0).toUpperCase() || 'Y'}
               </AvatarFallback>
             </Avatar>
