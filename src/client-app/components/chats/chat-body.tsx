@@ -40,7 +40,7 @@ const ChatBody = ({
     const HubConnection = new HubConnectionBuilder()
       .withUrl(
         `${process.env.NEXT_PUBLIC_NOTIFY_SERVER_URL}` ||
-          'http://localhost:5000/api/v1/notify'
+          'https://api.chatapp.com/api/v1/notify'
       )
       .withAutomaticReconnect()
       .build();
@@ -170,7 +170,10 @@ const ChatBody = ({
                           }
                           height={300}
                           width={300}
-                          src={`http://localhost:5000/api/v1/chat/messages/${message.messageId}/pic`}
+                          src={`${
+                            process.env.NEXT_PUBLIC_API_SERVER_URL ||
+                            'https://api.chatapp.com'
+                          }/api/v1/chat/messages/${message.messageId}/pic`}
                           alt={message.messageId}
                           unoptimized={true}
                         />

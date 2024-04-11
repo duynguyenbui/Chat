@@ -2,7 +2,9 @@ const axios = require('axios');
 
 async function handleStream() {
   const response = await axios.get(
-    'http://localhost:5000/api/v1/chat/messages/ai/stream?input=hello',
+    `${
+      process.env.API_SERVER_URL || 'https://api.chatapp.com'
+    }/api/v1/chat/messages/ai/stream?input=hello`,
     {
       responseType: 'stream',
     }
@@ -15,4 +17,4 @@ async function handleStream() {
   }
 }
 
-handleStream()
+handleStream();

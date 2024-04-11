@@ -22,7 +22,11 @@ const ChatAI = ({ user }: { user: User }) => {
   const handleStream = (query: string) => {
     // Fetch the event stream from the server
     // Change URL to environment variable for production
-    fetch(`http://localhost:5000/api/v1/chat/messages/ai/stream?input=${query}`)
+    fetch(
+      `${
+        process.env.NEXT_PUBLIC_API_SERVER_URL || 'https://api.chatapp.com'
+      }/api/v1/chat/messages/ai/stream?input=${query}`
+    )
       .then((response) => {
         // Get the readable stream from the response body
 

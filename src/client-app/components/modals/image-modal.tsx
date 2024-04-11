@@ -18,7 +18,10 @@ const ImageModal = () => {
           <Image
             alt={data.messageId}
             // TODO: Change URL to environment in order to deploy with nginx
-            src={`http://localhost:5000/api/v1/chat/messages/${data.messageId}/pic`}
+            src={`${
+              process.env.NEXT_PUBLIC_API_SERVER_URL ||
+              'https://api.chatapp.com'
+            }/api/v1/chat/messages/${data.messageId}/pic`}
             fill
             unoptimized={true}
           />
