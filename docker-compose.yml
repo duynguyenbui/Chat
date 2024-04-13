@@ -11,10 +11,18 @@
       context: .
       dockerfile: src/Server/Dockerfile
     ports:
-      - 5000:8080
+      - 5000:80
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - AI__OpenAI__BaseUrl=http://host.docker.internal:1234/v1
+      - AI__OpenAI__ApiKey=lm-studio
+      - AI__OpenAI__ModelName=lmstudio-ai/gemma-2b-it-GGUF/gemma-2b-it-q8_0.gguf
+      - Client__BaseUrl=https://app.chatapp.com
+      - ChatOptions__PicBaseUrl=https://api.chatapp.com/api/v1/chat/messages/[0]/pic/
+      - ChatOptions__PicAvatarUrl=https://api.chatapp.com/api/v1/identity/users/avatar/[0]/pic/
       - ConnectionStrings__ChatDB=Host=postgres-db;Port=5432;Database=ChatDB;Username=postgres;Password=postgrespw
+      - VIRTUAL_HOST=api.chatapp.com
     depends_on:
       - postgres-db
   client-app:
@@ -25,9 +33,20 @@
     ports:
       - 3000:3000
     environment:
-      - API_SERVER_URL=http://server:8080
+      - API_SERVER_URL=http://server:80
       - AUTH_SECRET=upAybD3G8XUMzEKTM7fOfmPzHV2Bel5g
-      - NEXT_PUBLIC_NOTIFY_SERVER_URL=http://localhost:5000/api/v1/notify
+      - NEXT_PUBLIC_NOTIFY_SERVER_URL=https://api.chatapp.com/api/v1/notify
+      - NEXT_PUBLIC_API_SERVER_URL=https://api.chatapp.com
+      - VIRTUAL_HOST=app.chatapp.com
+      - VIRTUAL_PORT=3000
     depends_on:
       - server
       - postgres-db
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs

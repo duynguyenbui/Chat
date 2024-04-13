@@ -18,5 +18,4 @@ public class Message
     public Conversation Conversation { get; set; }
 
     public List<User>? Seen { get; set; }
-    public string MessageText { get; set; }
 }

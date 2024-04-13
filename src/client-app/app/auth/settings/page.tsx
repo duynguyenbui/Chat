@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const SettingsPage = () => {
   const user = useCurrentUser();
@@ -52,7 +53,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <AuthWrapper isLogo large>
+    <AuthWrapper isLogo large user={user}>
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
@@ -120,7 +121,6 @@ const SettingsPage = () => {
                 )}
               />
             </div>
-
             {/* <FormItem>
               <FormLabel>Access Token</FormLabel>
               <Input value={user?.access_token} readOnly />

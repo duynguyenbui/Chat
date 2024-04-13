@@ -6,7 +6,8 @@ public class ChatServices(
     IOptions<ChatOptions> options,
     IHubContext<ChatHub> hubContext,
     IIdentityService identityService,
-    UserManager<User> userManager)
+    UserManager<User> userManager,
+    IChatAI chatAI)
 {
     public ChatContext Context { get; } = context;
     public ILogger<ChatServices> Logger { get; } = logger;
@@ -14,4 +15,6 @@ public class ChatServices(
     public IHubContext<ChatHub> HubContext { get; } = hubContext;
     public IIdentityService IdentityService { get; } = identityService;
     public UserManager<User> UserManager { get; } = userManager;
+
+    public IChatAI ChatAI { get; } = chatAI;
 }

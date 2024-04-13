@@ -10,7 +10,6 @@ public class ChatContext(DbContextOptions<ChatContext> options) : IdentityDbCont
     public DbSet<Conversation> Conversations { get; set; }
     public DbSet<Message> Messages { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // Customize the ASP.NET Identity model and override the defaults if needed.

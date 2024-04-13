@@ -17,6 +17,7 @@ public static class ChatApis
 
         // Routes for messages.
         app.MapPost("/messages", CreateMessage);
+        app.MapGet("/conversations/find/messages/{conversationId:minlength(1)}", FindMessage);
         // app.MapGet("antiforgery/token", (IAntiforgery forgeryService, HttpContext context) =>
         // {
         //     var tokens = forgeryService.GetAndStoreTokens(context);
@@ -28,6 +29,10 @@ public static class ChatApis
         app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery();
         app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
+
+        // Routes for AI assistant.
+        app.MapPost("/messages/ai", AIAssistantWithoutStream).AllowAnonymous();
+        app.MapGet("/messages/ai/stream", AIAssistantWithStream).AllowAnonymous();
 
         return app;
     }
@@ -42,7 +47,7 @@ public static class ChatApis
 
         var conversation = await services.Context.Conversations
             .Include(conversation => conversation.Users)
-            .Include(conversation => conversation.Messages)
+            .Include(conversation => conversation.Messages)!
             .ThenInclude(list => list.Seen)
             .Where(conversation => conversation.Id == conversationId)
             .FirstOrDefaultAsync();
@@ -117,6 +122,35 @@ public static class ChatApis
         if (result < 0) return TypedResults.BadRequest("Something went wrong");
 
         return TypedResults.Ok(message.MapToMessageResponse(services.Options.Value));
+    }
+
+    public static async Task<Results<Ok<List<MessageResponse>>, NotFound, UnauthorizedHttpResult>>
+        FindMessage([AsParameters] ChatServices services, string conversationId, [FromQuery] string contentToFind)
+    {
+        var user = await services.IdentityService.GetCurrentUser();
+        if (user is null) return TypedResults.Unauthorized();
+
+        if (string.IsNullOrEmpty(contentToFind)) return TypedResults.NotFound();
+
+        var conversation =
+            await services.Context.Conversations
+                .Include(c => c.Users)
+                .Where(c => c.Id == conversationId && c.Users.Contains(user))
+                .FirstOrDefaultAsync();
+
+        if (conversation == null) return TypedResults.NotFound();
+
+        var messages = await services.Context.Messages
+            .Include(m => m.Sender)
+            .Include(m => m.Seen)
+            .Where(message => message.ConversationId == conversation.Id)
+            .Where(message => message.Content != null && message.Content.Contains(contentToFind))
+            .ToListAsync();
+
+        var chatOptions = services.Options.Value;
+        var messageResponses = messages.Select(message => message.MapToMessageResponse(chatOptions)).ToList();
+
+        return TypedResults.Ok(messageResponses);
     }
 
     public static async Task<Results<Ok<MessageResponse>, BadRequest<string>, UnauthorizedHttpResult>>
@@ -382,6 +416,47 @@ public static class ChatApis
         }
 
         return TypedResults.NotFound();
+    }
+
+    public static async Task<Results<Ok<string>, UnauthorizedHttpResult>> AIAssistantWithoutStream(
+        [FromBody] SendMessageInput input,
+        [AsParameters] ChatServices services)
+    {
+        var user = await services.IdentityService.GetCurrentUser();
+
+        if (user is null) return TypedResults.Unauthorized();
+
+        var result = await services.ChatAI.Send(input);
+
+        return TypedResults.Ok(result);
+    }
+
+    public static async Task AIAssistantWithStream(HttpContext context, [FromQuery] string input,
+        [AsParameters] ChatServices services, CancellationToken cancellationToken)
+    {
+        // REVIEW: Just for testing purposes so we don't need to check user credentials
+        // var user = await services.IdentityService.GetCurrentUser();
+        //
+        // if (user is null)
+        // {
+        //     context.Request.ContentType = "text/plain";
+        //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        //     await context.Response.WriteAsync("You must be logged in to use AI Assistant",
+        //         cancellationToken: cancellationToken);
+        //     await context.Response.CompleteAsync();
+        // }
+        // else
+        // {
+        context.Response.ContentType = "text/event-stream";
+
+        await foreach (var r in services.ChatAI.SendStream(input).WithCancellation(cancellationToken))
+        {
+            if (r != null) await context.Response.WriteAsync(r, cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
+        }
+
+        await context.Response.CompleteAsync();
+        // }
     }
 
     private static string GetImageMimeTypeFromImageFileExtension(string extension) => extension switch

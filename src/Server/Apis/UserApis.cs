@@ -125,29 +125,115 @@ public static class UserApis
                 [FromServices] IServiceProvider sp) =>
             {
                 var userManager = sp.GetRequiredService<UserManager<TUser>>();
+                var options = sp.GetRequiredService<IOptions<ChatOptions>>();
                 if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
                 {
                     return TypedResults.NotFound();
                 }
 
-                var users = await userManager.Users.Where(u => u.Id != user.Id).Select(u => u.MapToUserResponse())
+                var users = await userManager.Users
+                    .Where(u => u.Id != user.Id && u.Id != "b91a9cb7-fa92-4683-b5bd-51e7fd20eace")
+                    .Select(u => u.MapToUserResponse(options.Value))
                     .ToListAsync();
 
                 return TypedResults.Ok(users);
             }).RequireAuthorization();
+
+
+        routeGroup.MapPost("users/avatar",
+            async Task<Results<Ok<string>, BadRequest<string>, UnauthorizedHttpResult>> (
+                [FromServices] IServiceProvider sp, IFormFile image) =>
+            {
+                using var scope = sp.CreateScope();
+                // Inject all services needed for user avatar
+                var options = scope.ServiceProvider.GetRequiredService<IOptions<ChatOptions>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var identityService = scope.ServiceProvider.GetRequiredService<IIdentityService>();
+
+                var user = await identityService.GetCurrentUser();
+
+                if (user is null) return TypedResults.Unauthorized();
+
+                if (image is null)
+                {
+                    return TypedResults.BadRequest("Missing data");
+                }
+
+                try
+                {
+                    // Save Image
+                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "Pics");
+
+                    if (!Directory.Exists(uploadsPath))
+                    {
+                        Directory.CreateDirectory(uploadsPath);
+                    }
+
+                    var fileName = user.Id + Path.GetExtension(image.FileName);
+                    var filePath = Path.Combine(uploadsPath, fileName);
+
+                    await using var stream = new FileStream(filePath, FileMode.Create);
+                    await image.CopyToAsync(stream);
+
+                    user.Image = fileName;
+
+                    await userManager.UpdateAsync(user);
+
+                    return TypedResults.Ok(options.Value.PicAvatarUrl?.Replace("[0]", user.Id));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return TypedResults.BadRequest("Something went wrong when trying to change your avatar");
+                }
+            }).DisableAntiforgery();
+
+        routeGroup.MapGet("/users/avatar/{userId:minlength(1)}/pic",
+            async Task<Results<PhysicalFileHttpResult, BadRequest<string>, UnauthorizedHttpResult>> (
+                [FromServices] IServiceProvider sp, string userId, IWebHostEnvironment environment) =>
+            {
+                using var scope = sp.CreateScope();
+                var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+                if (userId is null) return TypedResults.Unauthorized();
+
+                var user = await userMgr.FindByIdAsync(userId);
+
+                if (user == null) return TypedResults.BadRequest("Can't find user for this user id");
+
+                if (user.Image is null)
+                {
+                    return TypedResults.BadRequest("Can't find image related to this user");
+                }
+
+                var path = GetFullPath(environment.ContentRootPath, user.Image);
+
+                var imageFileExtension = Path.GetExtension(user.Image);
+                if (imageFileExtension != null)
+                {
+                    var mimetype = GetImageMimeTypeFromImageFileExtension(imageFileExtension);
+                    var lastModified = File.GetLastWriteTimeUtc(path);
+
+                    return TypedResults.PhysicalFile(path, mimetype, lastModified: lastModified);
+                }
+
+                return TypedResults.BadRequest("Something went wrong when getting image file");
+            }).AllowAnonymous();
 
         var accountGroup = routeGroup.MapGroup("/manage").RequireAuthorization();
 
         accountGroup.MapGet("/info", async Task<Results<Ok<UserResponse>, ValidationProblem, NotFound>>
             (ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
         {
+            var options = sp.GetRequiredService<IOptions<ChatOptions>>();
+
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(options, user, userManager));
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<UserResponse>, ValidationProblem, NotFound>>
@@ -155,6 +241,8 @@ public static class UserApis
             [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
+            var options = sp.GetRequiredService<IOptions<ChatOptions>>();
+
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
                 return TypedResults.NotFound();
@@ -193,7 +281,7 @@ public static class UserApis
                 }
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(options, user, userManager));
         });
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
@@ -233,12 +321,13 @@ public static class UserApis
         return TypedResults.ValidationProblem(errorDictionary);
     }
 
-    private static async Task<UserResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
+    private static async Task<UserResponse> CreateInfoResponseAsync<TUser>(IOptions<ChatOptions> options,
+        TUser user, UserManager<TUser> userManager)
         where TUser : User
     {
         return new UserResponse(await userManager.GetUserIdAsync(user),
             await userManager.GetUserNameAsync(user),
-            user.Image,
+            options.Value.PicAvatarUrl?.Replace("[0]", user.Id),
             await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."));
     }
 
@@ -268,4 +357,21 @@ public static class UserApis
     {
         public string? Name => null;
     }
+
+    private static string GetImageMimeTypeFromImageFileExtension(string extension) => extension switch
+    {
+        ".png" => "image/png",
+        ".gif" => "image/gif",
+        ".jpg" or ".JPG" or ".jpeg" => "image/jpeg",
+        ".bmp" => "image/bmp",
+        ".tiff" => "image/tiff",
+        ".wmf" => "image/wmf",
+        ".jp2" => "image/jp2",
+        ".svg" => "image/svg+xml",
+        ".webp" => "image/webp",
+        _ => "application/octet-stream",
+    };
+
+    public static string GetFullPath(string contentRootPath, string? pictureFileName) =>
+        Path.Combine(contentRootPath, "Pics", pictureFileName);
 }

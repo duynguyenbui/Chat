@@ -3,7 +3,7 @@
 import useSWR from 'swr';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SquarePen } from 'lucide-react';
+import { SquarePen, StarsIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from '@/components/ui/tooltip';
-import { Avatar, AvatarFallback } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { getConversationByUserId } from '@/actions/conversations';
 import { useCurrentUser } from '@/hooks/use-current-user';
 
@@ -71,6 +71,27 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
         </div>
       )}
       <nav className="grid gap-1 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
+        {isCollapsed || isMobile ? (
+          <Link href="/conversations/ai" className="md:ml-3 sm:ml-1">
+            <Avatar className="flex justify-center items-center">
+              <AvatarFallback className="w-10 h-10">AI</AvatarFallback>
+            </Avatar>
+          </Link>
+        ) : (
+          <Link
+            href="/conversations/ai"
+            className="ml-5 flex max-w-full items-center gap-4 bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 text-transparent bg-clip-text"
+          >
+            <Avatar className="flex justify-center items-center">
+              <AvatarFallback className="w-10 h-10">AI</AvatarFallback>
+            </Avatar>
+            <div className="flex">
+              <span className="bg-gradient-to-tl">Chat With AI</span>
+              <StarsIcon className="w-5 h-5 ml-3 bg-gradient-to-r from-cyan-500 to-blue-500" />
+            </div>
+          </Link>
+        )}
+
         {conversations?.map((conversation, index) =>
           isCollapsed || isMobile ? (
             <TooltipProvider key={index}>
@@ -91,6 +112,10 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
                     )}
                   >
                     <Avatar className="flex justify-center items-center">
+                      {/* <AvatarImage
+                        src={message.sender.image}
+                        alt={message.sender.name ?? ''}
+                      /> */}
                       <AvatarFallback className="w-10 h-10">
                         {(conversation?.name === null &&
                           conversation.users
@@ -131,6 +156,16 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
               )}
             >
               <Avatar className="flex justify-center items-center">
+                <AvatarImage
+                  src={
+                    (conversation?.name === null &&
+                      conversation.users.find(
+                        (user) => user?.name !== currentUser?.email
+                      )?.image) ||
+                    ''
+                  }
+                  alt={currentUser?.image ?? ''}
+                />
                 <AvatarFallback className="w-10 h-10">
                   {(conversation?.name === null &&
                     conversation.users
@@ -168,7 +203,7 @@ export function Sidebar({ isCollapsed, isMobile }: SidebarProps) {
                     }
                   </span>
                 )}
-              </div>{' '}
+              </div>
             </Link>
           )
         )}
