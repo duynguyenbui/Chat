@@ -17,7 +17,7 @@ import { seen } from '@/actions/seen';
 import { message } from '@/actions/message';
 import Image from 'next/image';
 import { useModal } from '@/hooks/use-store-modal';
-import { getUrlEnvironment } from '@/lib/get-environment';
+import { getUrlEnvironment } from '@/lib/get-url-environment';
 
 interface ChatBodyProps {
   messages?: Message[];

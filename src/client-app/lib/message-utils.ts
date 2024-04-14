@@ -11,12 +11,14 @@ export function generateMessage(message: string, user: User) {
       id: user.id,
       name: user.name,
       email: user.email,
+      image: user.image,
     },
     seen: [
       {
         id: user.id,
         name: user.name,
         email: user.email,
+        image: user.image,
       },
     ],
   };

@@ -2,60 +2,40 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import ChatBottombar from './chat-bottombar';
-import { Message, User } from '@/types';
+import { HistoryItem, Message, User } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { StarsIcon } from 'lucide-react';
-import { getUrlEnvironment } from '@/lib/get-environment';
-
-const apiUrl = getUrlEnvironment();
+import { sendAiMessage } from '@/actions/ai-message';
+import { generateAIMessage } from '@/lib/message-utils';
 
 const ChatAI = ({ user }: { user: User }) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [aiMessage, setAiMessage] = useState('');
 
   const handleMessage = (message: Message) => {
     setMessages((prev) => [...prev, message]);
-    handleStream(message.content);
+
+    var historyItems = getHistoryItemsFromMessages(messages, user);
+
+    onSubmit({ text: message.content, historyItems: historyItems });
   };
 
-  const handleStream = (query: string) => {
-    // Fetch the event stream from the server
-    // Change URL to environment variable for production
-    fetch(`${apiUrl}/api/v1/chat/messages/ai/stream?input=${query}`)
-      .then((response) => {
-        // Get the readable stream from the response body
-
-        const stream = response.body;
-        // Get the reader from the stream
-        const reader = stream?.getReader();
-
-        if (reader != null) {
-          const readChunk = () => {
-            reader
-              .read()
-              .then(({ value, done }) => {
-                if (done) {
-                  return;
-                }
-                const chunkString = new TextDecoder().decode(value);
-                setAiMessage((prev) => prev.concat(chunkString));
-                readChunk();
-              })
-              .catch((error) => {
-                console.error(error);
-              });
-          };
-          readChunk();
-        }
-      })
-      .catch((error) => console.error(error))
-      .finally(() => setAiMessage(''));
+  const onSubmit = async ({
+    text,
+    historyItems = [],
+  }: {
+    text: string;
+    historyItems?: HistoryItem[];
+  }) => {
+    try {
+      var result = await sendAiMessage(text, historyItems);
+      setMessages((prev) => [...prev, generateAIMessage(result)]);
+    } catch (error) {
+      console.error(error);
+    }
   };
-
-  console.log({ aiMessage });
 
   useEffect(() => {
     if (messages) {
@@ -64,7 +44,7 @@ const ChatAI = ({ user }: { user: User }) => {
           messagesContainerRef.current.scrollHeight;
       }
     }
-  }, [messages, aiMessage]);
+  }, [messages]);
 
   return (
     <div className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col">
@@ -102,7 +82,7 @@ const ChatAI = ({ user }: { user: User }) => {
               )}
             >
               <div className="flex gap-3 items-center">
-                {message.sender.name === user.name && (
+                {message.sender.name === user.name ? (
                   <>
                     <span className="bg-accent p-3 rounded-md max-w-xs">
                       <div className="flex flex-col items-start gap-2">
@@ -123,30 +103,39 @@ const ChatAI = ({ user }: { user: User }) => {
                     <Avatar className="flex justify-center items-center">
                       <AvatarImage
                         src={message.sender.image}
-                        alt={message.sender.name ?? ''}
+                        alt={message.sender.image ?? ''}
                       />
                       <AvatarFallback>
                         {message.sender.name.at(0)?.toUpperCase() || 'ME'}
                       </AvatarFallback>
                     </Avatar>
                   </>
+                ) : (
+                  <>
+                    <Avatar className="flex justify-center items-center">
+                      <AvatarFallback>AI</AvatarFallback>
+                    </Avatar>
+                    <span className="bg-accent p-3 rounded-md max-w-xs">
+                      <div className="flex flex-col items-start gap-2">
+                        <div>{message.content !== '' && message.content}</div>
+                        <div>
+                          {messages.length - 1 === index && (
+                            <h5 className="text-xs text-muted-foreground ">
+                              <time suppressHydrationWarning>
+                                {new Date(
+                                  message.createdAt
+                                ).toLocaleTimeString() || '00:00 AM'}
+                              </time>
+                            </h5>
+                          )}
+                        </div>
+                      </div>
+                    </span>
+                  </>
                 )}
               </div>
             </motion.div>
           ))}
-
-          {aiMessage !== '' && (
-            <div className="flex gap-3 items-center p-4 whitespace-pre-wrap">
-              <Avatar className="flex justify-center items-center">
-                <AvatarFallback>AI</AvatarFallback>
-              </Avatar>
-              <span className="bg-accent p-3 rounded-md max-w-xs">
-                <div className="flex flex-col items-start gap-2">
-                  <div>{aiMessage !== '' && aiMessage}</div>
-                </div>
-              </span>
-            </div>
-          )}
         </AnimatePresence>
       </div>
       <ChatBottombar
@@ -160,3 +149,21 @@ const ChatAI = ({ user }: { user: User }) => {
 };
 
 export default ChatAI;
+
+const getHistoryItemsFromMessages = (
+  messages: Message[],
+  user: User
+): HistoryItem[] => {
+  // Lọc ra các tin nhắn của người dùng
+  const userMessages = messages.filter(
+    (message) => message.sender.name === user.name
+  );
+
+  // Tạo mảng các mục lịch sử từ các tin nhắn của người dùng
+  const historyItems = userMessages.map((message) => ({
+    role: 'user', // Đây là người dùng
+    content: message.content,
+  }));
+
+  return historyItems;
+};

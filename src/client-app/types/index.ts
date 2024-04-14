@@ -33,3 +33,8 @@ export interface TokenResponse {
   expiresIn: number;
   refreshToken: string;
 }
+
+export interface HistoryItem {
+  role: string;
+  content: string;
+}

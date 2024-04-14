@@ -31,7 +31,7 @@ public static class ChatApis
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
 
         // Routes for AI assistant.
-        app.MapPost("/messages/ai", AIAssistantWithoutStream).AllowAnonymous();
+        app.MapPost("/messages/ai", AIAssistantWithoutStream);
         app.MapGet("/messages/ai/stream", AIAssistantWithStream).AllowAnonymous();
 
         return app;
@@ -418,17 +418,23 @@ public static class ChatApis
         return TypedResults.NotFound();
     }
 
-    public static async Task<Results<Ok<string>, UnauthorizedHttpResult>> AIAssistantWithoutStream(
+    public static async Task<Results<Ok<string>, UnauthorizedHttpResult, BadRequest<string>>> AIAssistantWithoutStream(
         [FromBody] SendMessageInput input,
         [AsParameters] ChatServices services)
     {
         var user = await services.IdentityService.GetCurrentUser();
-
         if (user is null) return TypedResults.Unauthorized();
 
-        var result = await services.ChatAI.Send(input);
+        try
+        {
+            var result = await services.ChatAI.Send(input);
 
-        return TypedResults.Ok(result);
+            return TypedResults.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return TypedResults.BadRequest("Something went wrong!");
+        }
     }
 
     public static async Task AIAssistantWithStream(HttpContext context, [FromQuery] string input,

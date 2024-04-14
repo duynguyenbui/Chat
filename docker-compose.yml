@@ -14,6 +14,7 @@
       - 5000:80
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      # Enforce URLS of the server run on port 80
       - ASPNETCORE_URLS=http://+:80
       - AI__OpenAI__BaseUrl=http://host.docker.internal:1234/v1
       - AI__OpenAI__ApiKey=lm-studio
@@ -35,8 +36,6 @@
     environment:
       - API_SERVER_URL=http://server:80
       - AUTH_SECRET=upAybD3G8XUMzEKTM7fOfmPzHV2Bel5g
-      - NEXT_PUBLIC_NOTIFY_SERVER_URL=https://api.chatapp.com/api/v1/notify
-      - NEXT_PUBLIC_API_SERVER_URL=https://api.chatapp.com
       - VIRTUAL_HOST=app.chatapp.com
       - VIRTUAL_PORT=3000
     depends_on:

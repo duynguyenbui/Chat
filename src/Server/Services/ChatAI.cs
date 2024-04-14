@@ -49,10 +49,14 @@ public sealed class ChatAI : IChatAI
     {
         if (!IsEnabled) return "AI is not enabled";
 
+        IEnumerable<Message>? historyMessages = input.HistoryItems?
+            .Select(historyItem => Message.Create(historyItem.Role, historyItem.Content)).ToList();
+
         List<Message> messages =
         [
             Message.Create(ChatRoleType.System,
                 "You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful. Always give them an answer."),
+            ..historyMessages,
             Message.Create(ChatRoleType.User, input.Text)
         ];
 

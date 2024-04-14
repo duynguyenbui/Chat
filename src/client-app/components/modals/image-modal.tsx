@@ -4,7 +4,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useModal } from '@/hooks/use-store-modal';
 import Image from 'next/image';
-import { getUrlEnvironment } from '@/lib/get-environment';
+import { getUrlEnvironment } from '@/lib/get-url-environment';
 
 const apiUrl = getUrlEnvironment();
 
