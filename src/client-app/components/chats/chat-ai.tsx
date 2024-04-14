@@ -9,10 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { StarsIcon } from 'lucide-react';
 import { sendAiMessage } from '@/actions/ai-message';
 import { generateAIMessage } from '@/lib/message-utils';
+import { BeatLoader } from 'react-spinners';
+import { useTheme } from 'next-themes';
 
 const ChatAI = ({ user }: { user: User }) => {
+  const { theme } = useTheme();
+
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleMessage = (message: Message) => {
     setMessages((prev) => [...prev, message]);
@@ -30,10 +35,13 @@ const ChatAI = ({ user }: { user: User }) => {
     historyItems?: HistoryItem[];
   }) => {
     try {
+      setLoading(true);
       var result = await sendAiMessage(text, historyItems);
       setMessages((prev) => [...prev, generateAIMessage(result)]);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,6 +144,45 @@ const ChatAI = ({ user }: { user: User }) => {
               </div>
             </motion.div>
           ))}
+          {loading && (
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 1, y: 50, x: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+              exit={{ opacity: 0, scale: 1, y: 1, x: 0 }}
+              transition={{
+                opacity: { duration: 0.1 },
+                layout: {
+                  type: 'spring',
+                  bounce: 0.3,
+                },
+              }}
+              style={{
+                originX: 0.5,
+                originY: 0.5,
+              }}
+              className={cn(
+                'flex flex-col gap-2 p-4 whitespace-pre-wrap',
+                'items-start'
+              )}
+            >
+              <div className="flex gap-3 items-center">
+                <>
+                  <Avatar className="flex justify-center items-center">
+                    <AvatarFallback>AI</AvatarFallback>
+                  </Avatar>
+                  <span className="bg-accent p-3 rounded-md max-w-xs">
+                    <div className="flex flex-col items-start gap-2">
+                      <BeatLoader
+                        size={5}
+                        color={theme === 'light' ? 'black' : 'white'}
+                      />
+                    </div>
+                  </span>
+                </>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
       <ChatBottombar
@@ -154,14 +201,12 @@ const getHistoryItemsFromMessages = (
   messages: Message[],
   user: User
 ): HistoryItem[] => {
-  // Lọc ra các tin nhắn của người dùng
   const userMessages = messages.filter(
     (message) => message.sender.name === user.name
   );
 
-  // Tạo mảng các mục lịch sử từ các tin nhắn của người dùng
   const historyItems = userMessages.map((message) => ({
-    role: 'user', // Đây là người dùng
+    role: 'user',
     content: message.content,
   }));
 
