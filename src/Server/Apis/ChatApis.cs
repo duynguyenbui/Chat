@@ -26,7 +26,7 @@ public static class ChatApis
         // });
         //.RequireAuthorization(); // In a real world scenario, you'll only give this token to authorized users
 
-        app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery();
+        app.MapPost("/messages/pics", CreateImageMessage).DisableAntiforgery().AllowAnonymous();
         app.MapGet("/messages/{messageId:minlength(1)}/pic", GetMessagePictureById).AllowAnonymous();
         app.MapDelete("/messages/{messageId:minlength(1)}", DeleteMessage);
 

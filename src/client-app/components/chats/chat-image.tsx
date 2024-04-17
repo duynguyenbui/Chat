@@ -2,9 +2,6 @@
 
 import React, { useRef, useState } from 'react';
 import { FileImage } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import axios from 'axios';
-import axiosInterceptorInstance from '@/lib/api';
 import { sendImage } from '@/actions/send-image';
 
 const ChatImageUpload = ({ conversationId }: { conversationId: string }) => {
@@ -28,10 +25,12 @@ const ChatImageUpload = ({ conversationId }: { conversationId: string }) => {
       var formData = new FormData();
       formData.append('image', selectedFile);
 
-      sendImage(conversationId, formData)
+      var result = sendImage(conversationId, formData)
         .then((res) => console.log(res))
         .catch((error) => console.log(error))
         .finally(() => setFile(null));
+
+      console.log(result);
     }
   };
 
